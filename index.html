@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30天 Git 命令打卡计划</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container { max-width: 700px; margin: 0 auto; }
+  h1 {
+    text-align: center;
+    color: #58a6ff;
+    margin-bottom: 8px;
+    font-size: 1.6rem;
+  }
+  .subtitle {
+    text-align: center;
+    color: #8b949e;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+  .progress-bar {
+    background: #21262d;
+    border-radius: 10px;
+    height: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #238636, #2ea043);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+  .progress-text {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #8b949e;
+    margin-bottom: 20px;
+  }
+  .mode-switch {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .mode-btn {
+    padding: 8px 20px;
+    border: 1px solid #30363d;
+    background: #21262d;
+    color: #c9d1d9;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .mode-btn.active {
+    background: #1f6feb;
+    border-color: #1f6feb;
+    color: #fff;
+  }
+  .phase { margin-bottom: 20px; }
+  .phase-title {
+    font-size: 1rem;
+    padding: 10px 14px;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+  }
+  .phase-green { background: #0d2818; color: #3fb950; }
+  .phase-yellow { background: #2d2a0a; color: #d29922; }
+  .phase-blue { background: #0a2040; color: #58a6ff; }
+  .phase-red { background: #3d1214; color: #f85149; }
+  .phase-purple { background: #2a1a3e; color: #bc8cff; }
+  .day-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-top: none;
+    padding: 14px;
+    transition: all 0.2s;
+  }
+  .day-card:last-child { border-radius: 0 0 8px 8px; }
+  .day-card.completed { border-left: 3px solid #238636; }
+  .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .day-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #e6edf3;
+  }
+  .check-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid #30363d;
+    background: transparent;
+    color: #30363d;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .check-btn.checked {
+    background: #238636;
+    border-color: #238636;
+    color: #fff;
+  }
+  .purpose {
+    font-size: 0.85rem;
+    color: #8b949e;
+    margin-bottom: 10px;
+  }
+  .cmd-box {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 0.9rem;
+    color: #7ee787;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .cmd-box.hidden-cmd {
+    color: #484f58;
+    letter-spacing: 2px;
+  }
+  .reveal-btn {
+    background: #1f6feb;
+    border: none;
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+  }
+  .reveal-btn:hover { background: #388bfd; }
+  .quiz-section { margin-top: 10px; }
+  .quiz-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .quiz-input:focus { border-color: #1f6feb; }
+  .quiz-input.correct { border-color: #238636; }
+  .quiz-input.wrong { border-color: #f85149; }
+  .quiz-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .quiz-btn {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .quiz-check { background: #238636; color: #fff; }
+  .quiz-check:hover { background: #2ea043; }
+  .quiz-show { background: #30363d; color: #c9d1d9; }
+  .quiz-show:hover { background: #484f58; }
+  .answer-display {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #0d2818;
+    border: 1px solid #238636;
+    border-radius: 6px;
+    color: #7ee787;
+    font-family: monospace;
+    font-size: 0.85rem;
+    display: none;
+  }
+  .answer-display.show { display: block; }
+  .bonus {
+    background: #161b22;
+    border: 1px dashed #bc8cff;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  .bonus h3 { color: #bc8cff; margin-bottom: 8px; }
+  .bonus p { font-size: 0.85rem; color: #8b949e; }
+  .reset-btn {
+    display: block;
+    margin: 24px auto 0;
+    padding: 8px 24px;
+    background: transparent;
+    border: 1px solid #f85149;
+    color: #f85149;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { background: #f85149; color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📅 30天 Git 命令打卡计划</h1>
+  <p class="subtitle">Termux 适用版 · 每天一条核心命令</p>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
+  <p class="progress-text" id="progressText">已完成 0 / 30 天</p>
+
+  <div class="mode-switch">
+    <button class="mode-btn active" onclick="setMode('learn')">📖 学习模式</button>
+    <button class="mode-btn" onclick="setMode('quiz')">🧠 默写模式</button>
+  </div>
+
+  <div id="cards"></div>
+
+  <div class="bonus">
+    <h3>🎁 隐藏第 31 天</h3>
+    <p>git config --global alias.st status → 之后可以用 git st 代替</p>
+  </div>
+
+  <button class="reset-btn" onclick="resetProgress()">🗑️ 重置打卡进度</button>
+</div>
+
+<script>
+const phases = [
+  { name: "🟢 第 1–7 天：生存必备", cls: "phase-green" },
+  { name: "🟡 第 8–14 天：分支与合并", cls: "phase-yellow" },
+  { name: "🔵 第 15–21 天：远程协作", cls: "phase-blue" },
+  { name: "🔴 第 22–28 天：排错与回滚", cls: "phase-red" },
+  { name: "🟣 第 29–30 天：实战整合", cls: "phase-purple" }
+];
+
+const days = [
+  { day: 1, cmd: 'git status', purpose: '查看当前仓库状态' },
+  { day: 2, cmd: 'git add .', purpose: '添加所有改动' },
+  { day: 3, cmd: 'git commit -m "msg"', purpose: '提交到本地' },
+  { day: 4, cmd: 'git push', purpose: '推送到 GitHub' },
+  { day: 5, cmd: 'git pull', purpose: '拉取远程更新' },
+  { day: 6, cmd: 'git log --oneline', purpose: '查看提交历史' },
+  { day: 7, cmd: 'git branch', purpose: '查看分支' },
+  { day: 8, cmd: 'git branch dev', purpose: '创建分支' },
+  { day: 9, cmd: 'git checkout dev', purpose: '切换分支（传统）' },
+  { day: 10, cmd: 'git switch dev', purpose: '切换分支（新版）' },
+  { day: 11, cmd: 'git merge dev', purpose: '合并分支' },
+  { day: 12, cmd: 'git branch -d dev', purpose: '删除分支' },
+  { day: 13, cmd: 'git rebase main', purpose: '变基（进阶）' },
+  { day: 14, cmd: 'git stash', purpose: '临时保存改动' },
+  { day: 15, cmd: 'git remote -v', purpose: '查看远程地址' },
+  { day: 16, cmd: 'git remote set-url origin xxx', purpose: '修改 remote' },
+  { day: 17, cmd: 'git fetch', purpose: '拉取但不合并' },
+  { day: 18, cmd: 'git diff', purpose: '查看改动内容' },
+  { day: 19, cmd: 'git log --graph', purpose: '可视化历史' },
+  { day: 20, cmd: 'git tag v1.0.0', purpose: '打标签' },
+  { day: 21, cmd: 'git show v1.0.0', purpose: '查看标签' },
+  { day: 22, cmd: 'git reset --soft HEAD~1', purpose: '撤回 commit' },
+  { day: 23, cmd: 'git reset --hard HEAD~1', purpose: '强制回退' },
+  { day: 24, cmd: 'git revert HEAD', purpose: '安全回滚' },
+  { day: 25, cmd: 'git clean -fd', purpose: '删除未跟踪文件' },
+  { day: 26, cmd: 'git reflog', purpose: '找回误删提交' },
+  { day: 27, cmd: 'git blame 文件名', purpose: '查谁改的' },
+  { day: 28, cmd: 'git shortlog', purpose: '看每人提交数' },
+  { day: 29, cmd: '新建 day29 分支 → 改代码 → PR', purpose: '实战：分支工作流' },
+  { day: 30, cmd: '回顾 30 天命令，整理 cheat sheet', purpose: '实战：知识整合' }
+];
+
+let mode = 'learn';
+let completed = JSON.parse(localStorage.getItem('git30') || '{}');
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && m === 'learn') || (i === 1 && m === 'quiz'));
+  });
+  render();
+}
+
+function toggleDay(day) {
+  completed[day] = !completed[day];
+  localStorage.setItem('git30', JSON.stringify(completed));
+  updateProgress();
+  render();
+}
+
+function updateProgress() {
+  const count = Object.values(completed).filter(Boolean).length;
+  document.getElementById('progressFill').style.width = (count / 30 * 100) + '%';
+  document.getElementById('progressText').textContent = `已完成 ${count} / 30 天`;
+}
+
+function checkAnswer(day) {
+  const input = document.getElementById('input-' + day);
+  const answer = document.getElementById('answer-' + day);
+  const val = input.value.trim();
+  const correct = days[day - 1].cmd;
+  if (val === correct) {
+    input.className = 'quiz-input correct';
+  } else {
+    input.className = 'quiz-input wrong';
+  }
+  answer.textContent = '✅ 正确答案：' + correct;
+  answer.classList.add('show');
+}
+
+function showAnswer(day) {
+  const answer = document.getElementById('answer-' + day);
+  answer.textContent = '✅ 正确答案：' + days[day - 1].cmd;
+  answer.classList.add('show');
+}
+
+function render() {
+  const container = document.getElementById('cards');
+  let html = '';
+  let phaseStart = 0;
+
+  phases.forEach((phase, pi) => {
+    const phaseDays = pi < 4 ? 7 : 2;
+    const phaseEnd = phaseStart + phaseDays;
+    html += `<div class="phase"><div class="phase-title ${phase.cls}">${phase.name}</div>`;
+
+    for (let i = phaseStart; i < phaseEnd; i++) {
+      const d = days[i];
+      const done = completed[d.day] ? 'completed' : '';
+      const checked = completed[d.day] ? 'checked' : '';
+      const checkIcon = completed[d.day] ? '✓' : '';
+
+      if (mode === 'learn') {
+        html += `
+          <div class="day-card ${done}">
+            <div class="day-header">
+              <span class="day-label">Day ${d.day}</span>
+              <button class="check-btn ${checked}" onclick="toggleDay(${d.day})">${checkIcon}</button>
+            </div>
+            <div class="purpose">🔹 ${d.purpose}</div>
+            <div class="cmd-box">${d.cmd}</div>
+          </div>`;
+      } else {
+        html += `
+          <div class="day-card ${done}">
+            <div class="day-header">
+              <span class="day-label">Day ${d.day}</span>
+              <button class="check-btn ${checked}" onclick="toggleDay(${d.day})">${checkIcon}</button>
+            </div>
+            <div class="purpose">🔹 ${d.purpose} — 请写出对应命令：</div>
+            <div class="quiz-section">
+              <input class="quiz-input" id="input-${d.day}" placeholder="输入 git 命令..." onkeydown="if(event.key==='Enter')checkAnswer(${d.day})">
+              <div class="quiz-actions">
+                <button class="quiz-btn quiz-check" onclick="checkAnswer(${d.day})">检查</button>
+                <button class="quiz-btn quiz-show" onclick="showAnswer(${d.day})">显示答案</button>
+              </div>
+              <div class="answer-display" id="answer-${d.day}"></div>
+            </div>
+          </div>`;
+      }
+    }
+
+    html += '</div>';
+    phaseStart = phaseEnd;
+  });
+
+  container.innerHTML = html;
+}
+
+function resetProgress() {
+  if (confirm('确定要重置所有打卡进度吗？')) {
+    completed = {};
+    localStorage.setItem('git30', '{}');
+    updateProgress();
+    render();
+  }
+}
+
+updateProgress();
+render();
+</script>
+</body>
+</html>
