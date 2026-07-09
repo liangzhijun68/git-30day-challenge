@@ -10,3 +10,4 @@ Honor50
 MiPlat5
 Co.PC
 Ho.G3
+Ho.Lenovo
