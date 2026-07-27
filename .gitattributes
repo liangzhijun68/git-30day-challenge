@@ -1,0 +1,17 @@
+# 自动检测文本文件，并强制 LF（适用于所有文本文件）
+* text=auto eol=lf
+
+# 明确指定某些文件类型使用 LF
+*.js text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+
+# 二进制文件不要转换
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
